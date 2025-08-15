@@ -19,6 +19,7 @@ createApp({
 
                 // Use fetch to get data from the API
                 const response = await fetch(apiUrl);
+                alert("1");  
                 const data = await response.json();
                 if (data.error) {
                     // Handle the 'no matching document' error from the API
