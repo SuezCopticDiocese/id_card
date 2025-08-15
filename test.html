@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for "Inter" -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .app-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="app-container">
+        <!-- Main application container -->
+        <div class="max-w-md w-full bg-white rounded-xl shadow-2xl p-8 border border-gray-200">
+            <!-- Conditional rendering based on state -->
+            <div v-if="loading" class="text-center py-10">
+                <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-gray-600 font-medium text-lg">Loading...</p>
+            </div>
+
+            <div v-else-if="error" class="text-center py-10">
+                <p class="text-red-500 font-bold text-xl">{{ error }}</p>
+                <p class="mt-2 text-gray-500">Please check the URL ID and try again.</p>
+            </div>
+
+            <div v-else class="text-center animate-fade-in">
+                <h1 class="text-4xl font-extrabold text-gray-900 leading-tight mb-2">
+                    {{ info.name }}
+                </h1>
+                <p class="text-xl font-medium text-gray-700 mt-4 mb-6">
+                    {{ info.location }}
+                </p>
+                <div class="mt-8 flex justify-center">
+                    <a href="#" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition duration-300 transform hover:scale-105 shadow-lg">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // Reactive data properties
+                const info = ref(null);
+                const error = ref(null);
+                const loading = ref(true);
+
+                // Function to fetch data from the API
+                const fetchData = async (id) => {
+                    loading.value = true;
+                    error.value = null;
+                    try {
+                        // Dynamically construct the API URL
+                        const apiUrl = `http://abc4soft.com:5000/api/v1/get_info/${id}`;
+                        
+                        // Use fetch to get data from the API
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+
+                        if (data.error) {
+                            // Handle the 'no matching document' error from the API
+                            error.value = data.error;
+                            info.value = null;
+                        } else {
+                            // Successfully received data
+                            info.value = data;
+                            error.value = null;
+                        }
+                    } catch (err) {
+                        // Handle network or other fetch errors
+                        console.error("Fetch error:", err);
+                        error.value = "Failed to load data. Please check your network connection.";
+                        info.value = null;
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                // The onMounted lifecycle hook is called when the component is mounted
+                onMounted(() => {
+                    // Extract ID from URL query string
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const id = urlParams.get('v');
+                    
+                    if (id) {
+                        fetchData(id);
+                    } else {
+                        // Handle case where no ID is provided in the URL
+                        loading.value = false;
+                        error.value = "No ID provided in the URL. Please use a format like /v=R7V5CT";
+                    }
+                });
+
+                return {
+                    info,
+                    error,
+                    loading
+                };
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+</html>
