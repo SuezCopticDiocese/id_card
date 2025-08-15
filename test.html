@@ -93,7 +93,7 @@
                     } catch (err) {
                         // Handle network or other fetch errors
                         console.error("Fetch error:", err);
-                        error.value = "Failed to load data. Please check your network connection 1." + apiUrl;
+                        error.value = apiUrl;
                         info.value = null;
                     } finally {
                         loading.value = false;
