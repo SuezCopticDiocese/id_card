@@ -15,11 +15,8 @@ createApp({
                 // Dynamically construct the API URL (note quotes added)
                 const apiUrl = `https://abc4soft.com/api/v1/get_info/R7V5CT`;
 
-                alert(apiUrl);  // alert the URL here 
-
-                // Use fetch to get data from the API
+               // Use fetch to get data from the API
                 const response = await fetch(apiUrl);
-                alert("1");  
                 const data = await response.json();
                 if (data.error) {
                     // Handle the 'no matching document' error from the API
