@@ -75,8 +75,8 @@
                     error.value = null;
                     try {
                         // Dynamically construct the API URL
-                        const apiUrl = `http://www.abc4soft.com:5000/api/v1/get_info/${id}`;
-                       
+                        const apiUrl = `http://abc4soft.com:5000/api/v1/get_info/${id}`;
+                        
                         // Use fetch to get data from the API
                         const response = await fetch(apiUrl);
                         const data = await response.json();
@@ -93,7 +93,7 @@
                     } catch (err) {
                         // Handle network or other fetch errors
                         console.error("Fetch error:", err);
-                        error.value = "Failed to load data. Please check your network connection 1." ;
+                        error.value = "Failed to load data. Please check your network connection.";
                         info.value = null;
                     } finally {
                         loading.value = false;
