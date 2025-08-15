@@ -13,7 +13,7 @@ createApp({
             error.value = null;
             try {
                 // Dynamically construct the API URL (note quotes added)
-                const apiUrl = `https://abc4soft.com/api/v1/get_info/R7V5CT`;
+                const apiUrl = `https://abc4soft.com/api/v1/get_info/${id}`;
 
                // Use fetch to get data from the API
                 const response = await fetch(apiUrl);
