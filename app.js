@@ -41,7 +41,7 @@ createApp({
         onMounted(() => {
             // Extract ID from URL query string
             const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('v');
+            id = urlParams.get('v');
             if (!id) {
                 // fallback to raw query string without '?'
                 id = window.location.search.slice(1);
