@@ -13,7 +13,7 @@ createApp({
             error.value = null;
             try {
                 // Dynamically construct the API URL (note quotes added)
-                const apiUrl = `http://abc4soft.com:5000/api/v1/get_info/R7V5CT`;
+                const apiUrl = `https://abc4soft.com:5000/api/v1/get_info/R7V5CT`;
 
                 alert(apiUrl);  // alert the URL here 
 
