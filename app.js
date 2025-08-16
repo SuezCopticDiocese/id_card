@@ -49,6 +49,9 @@ createApp({
 
             if (id) {
                 fetchData(id);
+                // Remove query string and hash from the URL without page reload
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState(null, '', cleanUrl);
             } else {
                 // Handle case where no ID is provided in the URL
                 loading.value = false;
