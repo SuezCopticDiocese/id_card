@@ -2,67 +2,128 @@ const { createApp, ref, onMounted } = Vue;
 
 createApp({
     setup() {
-        // Reactive data properties
         const info = ref(null);
         const error = ref(null);
         const loading = ref(true);
+        
+        // Auth & UI State
+        const currentView = ref('profile'); // 'profile', 'login', 'dashboard', 'changePassword'
+        const token = ref(localStorage.getItem('token') || null);
+        const loginId = ref('');
+        const loginPassword = ref('');
+        const menuItems = ref([]);
+        
+        // Password Change State
+        const oldPassword = ref('');
+        const newPassword = ref('');
 
-        // Function to fetch data from the API
+        const BASE_URL = 'https://abc4soft.com/api/v1';
+
         const fetchData = async (id) => {
             loading.value = true;
-            error.value = null;
             try {
-                // Dynamically construct the API URL (note quotes added)
-                const apiUrl = `https://abc4soft.com/api/v1/get_info/${id}`; 
-
-               // Use fetch to get data from the API
-                const response = await fetch(apiUrl);
+                const response = await fetch(`${BASE_URL}/get_info/${id}`);
                 const data = await response.json();
-                if (data.error) {
-                    // Handle the 'no matching document' error from the API
-                    error.value = data.error;
-                    info.value = null;
-                } else {
-                    // Successfully received data
-                    info.value = data;
-                    error.value = null;
-                }
+                if (data.detail) throw new Error(data.detail);
+                info.value = data;
+                loginId.value = data.id; // Pre-fill login ID
             } catch (err) {
-                // Handle network or other fetch errors and display the API URL
-                console.error("Fetch error:", err);
-                error.value = `Failed to load data from the API: ${apiUrl}. Please check your network connection.`;
-                info.value = null;
+                error.value = "User not found or connection error.";
             } finally {
                 loading.value = false;
             }
         };
 
-        // The onMounted lifecycle hook is called when the component is mounted
-        onMounted(() => {
-            // Extract ID from URL query string
-            const urlParams = new URLSearchParams(window.location.search);
-            id = urlParams.get('v');
-            if (!id) {
-                // fallback to raw query string without '?'
-                id = window.location.search.slice(1);
-            }
+        const handleLogin = async () => {
+            loading.value = true;
+            try {
+                // FastAPI OAuth2 expects form-data
+                const formData = new FormData();
+                formData.append('username', loginId.value);
+                formData.append('password', loginPassword.value);
 
-            if (id) {
-                fetchData(id);
-                // Remove query string and hash from the URL without page reload
-                //const cleanUrl = window.location.origin + window.location.pathname;
-                //window.history.replaceState(null, '', cleanUrl);
-            } else {
-                // Handle case where no ID is provided in the URL
+                const response = await fetch(`${BASE_URL}/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Login Failed');
+
+                token.value = data.access_token;
+                localStorage.setItem('token', data.access_token);
+                await fetchMenu();
+                currentView.value = 'dashboard';
+            } catch (err) {
+                alert(err.message);
+            } finally {
                 loading.value = false;
-                error.value = "No ID provided in the URL. Please use a format like /v=R7V5CT";
             }
+        };
+
+        const fetchMenu = async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/menu`, {
+                    headers: { 'Authorization': `Bearer ${token.value}` }
+                });
+                menuItems.value = await response.json();
+            } catch (err) {
+                console.error("Menu fetch failed");
+            }
+        };
+
+        const handleAction = (item) => {
+            if (item.action_type === 'NAVIGATE' && item.destination === '/change-password') {
+                currentView.value = 'changePassword';
+            } else if (item.action_type === 'LOGOUT') {
+                logout();
+            }
+        };
+
+        const updatePassword = async () => {
+            loading.value = true;
+            try {
+                const response = await fetch(`${BASE_URL}/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token.value}`
+                    },
+                    body: JSON.stringify({
+                        old_password: oldPassword.value,
+                        new_password: newPassword.value
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Update Failed');
+                alert("Success!");
+                currentView.value = 'dashboard';
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                loading.value = false;
+            }
+        };
+
+        const logout = () => {
+            token.value = null;
+            localStorage.removeItem('token');
+            currentView.value = 'profile';
+        };
+
+        onMounted(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let id = urlParams.get('v') || window.location.search.slice(1);
+            if (id) fetchData(id);
+            else loading.value = false;
         });
 
         return {
-            info,
-            error,
-            loading
+            info, error, loading, currentView,
+            loginId, loginPassword, handleLogin,
+            menuItems, handleAction,
+            oldPassword, newPassword, updatePassword,
+            logout
         };
     }
 }).mount('#app');
