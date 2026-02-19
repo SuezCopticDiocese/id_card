@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,61 +7,91 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 font-sans">
     <div id="app" class="app-container">
         <div class="max-w-md w-full bg-white rounded-xl shadow-2xl p-6 border border-gray-200">
             
             <!-- Loading State -->
             <div v-if="loading" class="text-center py-10">
                 <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
-                <p class="mt-4 text-gray-600">Processing...</p>
+                <p class="mt-4 text-gray-600">جاري المعالجة...</p>
             </div>
 
             <!-- Error State -->
             <div v-else-if="error" class="text-center py-10">
                 <p class="text-red-500 font-bold text-xl">{{ error }}</p>
-                <button @click="window.location.reload()" class="mt-4 text-blue-600 underline">Try Again</button>
+                <button @click="window.location.reload()" class="mt-4 text-blue-600 underline">حاول مرة أخرى</button>
             </div>
 
             <!-- VIEW 1: Public Profile -->
             <div v-else-if="currentView === 'profile'" class="text-center">
+                <div class="mb-4 text-blue-600 flex justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
                 <h1 class="text-3xl font-bold text-gray-900">{{ info?.name }}</h1>
                 <p class="text-gray-600 mt-2">{{ info?.location }}</p>
                 <div class="mt-8">
-                    <button @click="currentView = 'login'" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">Sign in</button>
+                    <button @click="currentView = 'login'" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">تسجيل الدخول</button>
                 </div>
             </div>
 
             <!-- VIEW 2: Login Form -->
             <div v-else-if="currentView === 'login'">
-                <h2 class="text-2xl font-bold mb-6 text-center">Login</h2>
-                <input v-model="loginId" type="text" placeholder="ID" class="w-full p-3 mb-4 border rounded-lg">
-                <input v-model="loginPassword" type="password" placeholder="Password" class="w-full p-3 mb-6 border rounded-lg">
-                <button @click="handleLogin" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 mb-3">Login</button>
-                <button @click="currentView = 'profile'" class="w-full text-gray-500 text-sm">Cancel</button>
+                <h2 class="text-2xl font-bold mb-6 text-center">الدخول للنظام</h2>
+                <input v-model="loginId" type="text" placeholder="رقم الهوية" class="w-full p-3 mb-4 border rounded-lg text-right">
+                <input v-model="loginPassword" type="password" placeholder="كلمة المرور" class="w-full p-3 mb-6 border rounded-lg text-right">
+                <button @click="handleLogin" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 mb-3">دخول</button>
+                <button @click="currentView = 'profile'" class="w-full text-gray-500 text-sm">إلغاء</button>
             </div>
 
             <!-- VIEW 3: Dashboard (Dynamic Menu) -->
             <div v-else-if="currentView === 'dashboard'">
-                <h2 class="text-xl font-bold mb-6 text-center">Main Menu</h2>
+                <h2 class="text-xl font-bold mb-6 text-center text-gray-800">القائمة الرئيسية</h2>
                 <div class="grid gap-4">
                     <button v-for="item in menuItems" :key="item.id" 
                             @click="handleAction(item)"
-                            class="flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition"
-                            :class="{'text-red-600': item.action_type === 'LOGOUT'}">
+                            class="flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition text-right shadow-sm"
+                            :class="{'text-red-600 border-red-100 bg-red-50': item.action_type === 'LOGOUT'}">
                         <span class="font-medium">{{ item.label }}</span>
-                        <span class="text-gray-400">→</span>
+                        <span class="text-gray-400">←</span>
                     </button>
                 </div>
             </div>
 
             <!-- VIEW 4: Change Password -->
             <div v-else-if="currentView === 'changePassword'">
-                <h2 class="text-2xl font-bold mb-6 text-center">Update Password</h2>
-                <input v-model="oldPassword" type="password" placeholder="Current Password" class="w-full p-3 mb-4 border rounded-lg">
-                <input v-model="newPassword" type="password" placeholder="New Password" class="w-full p-3 mb-6 border rounded-lg">
-                <button @click="updatePassword" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3">Save New Password</button>
-                <button @click="currentView = 'dashboard'" class="w-full text-gray-500 text-sm">Back to Menu</button>
+                <h2 class="text-2xl font-bold mb-6 text-center">تحديث كلمة المرور</h2>
+                <input v-model="oldPassword" type="password" placeholder="كلمة المرور الحالية" class="w-full p-3 mb-4 border rounded-lg text-right">
+                <input v-model="newPassword" type="password" placeholder="كلمة المرور الجديدة" class="w-full p-3 mb-6 border rounded-lg text-right">
+                <button @click="updatePassword" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 mb-3">حفظ التعديل</button>
+                <button @click="currentView = 'dashboard'" class="w-full text-gray-500 text-sm">العودة للقائمة</button>
+            </div>
+
+            <!-- VIEW 5: Members List (DYNAMIC RESULTS) -->
+            <div v-else-if="currentView === 'membersList'">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">النتائج</h2>
+                    <button @click="currentView = 'dashboard'" class="text-blue-600 text-sm font-medium hover:underline">← رجوع</button>
+                </div>
+
+                <div v-if="members.length === 0" class="text-center py-10 border-2 border-dashed rounded-xl">
+                    <p class="text-gray-400">لا توجد بيانات متاحة لهذا الاختيار.</p>
+                </div>
+
+                <div class="space-y-3 max-h-[450px] overflow-y-auto pl-2">
+                    <div v-for="person in members" :key="person.id" 
+                         class="p-4 bg-gray-50 border border-gray-100 rounded-xl flex items-center gap-4 text-right">
+                        <div class="bg-blue-100 text-blue-600 h-12 w-12 rounded-full flex items-center justify-center font-bold text-xs shrink-0">
+                            {{ person.id.slice(-4) }}
+                        </div>
+                        <div class="flex-grow">
+                            <p class="font-bold text-gray-900 leading-tight">{{ person.name }}</p>
+                            <p class="text-xs text-gray-400 mt-1">المعرف: {{ person.id }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
