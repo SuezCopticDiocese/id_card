@@ -7,11 +7,12 @@ createApp({
         const loading = ref(true);
         
         // Auth & UI State
-        const currentView = ref('profile'); // 'profile', 'login', 'dashboard', 'changePassword'
+        const currentView = ref('profile'); // 'profile', 'login', 'dashboard', 'changePassword', 'membersList'
         const token = ref(localStorage.getItem('token') || null);
         const loginId = ref('');
         const loginPassword = ref('');
         const menuItems = ref([]);
+        const members = ref([]); // Data for the dynamic list
         
         // Password Change State
         const oldPassword = ref('');
@@ -26,7 +27,7 @@ createApp({
                 const data = await response.json();
                 if (data.detail) throw new Error(data.detail);
                 info.value = data;
-                loginId.value = data.id; // Pre-fill login ID
+                loginId.value = data.id; 
             } catch (err) {
                 error.value = "User not found or connection error.";
             } finally {
@@ -37,7 +38,6 @@ createApp({
         const handleLogin = async () => {
             loading.value = true;
             try {
-                // FastAPI OAuth2 expects form-data
                 const formData = new FormData();
                 formData.append('username', loginId.value);
                 formData.append('password', loginPassword.value);
@@ -72,9 +72,37 @@ createApp({
             }
         };
 
+        const fetchMembers = async (destinationPath) => {
+            loading.value = true;
+            try {
+                // destinationPath is e.g., "/profile-members?location=3&profile_id=1"
+                const response = await fetch(`${BASE_URL}${destinationPath}`, {
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${token.value}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Failed to load members');
+                
+                members.value = data;
+                currentView.value = 'membersList';
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                loading.value = false;
+            }
+        };
+
         const handleAction = (item) => {
-            if (item.action_type === 'NAVIGATE' && item.destination === '/change-password') {
-                currentView.value = 'changePassword';
+            if (item.action_type === 'NAVIGATE') {
+                if (item.destination === '/change-password') {
+                    currentView.value = 'changePassword';
+                } else if (item.destination.includes('/profile-members')) {
+                    fetchMembers(item.destination);
+                }
             } else if (item.action_type === 'LOGOUT') {
                 logout();
             }
@@ -123,7 +151,7 @@ createApp({
             loginId, loginPassword, handleLogin,
             menuItems, handleAction,
             oldPassword, newPassword, updatePassword,
-            logout
+            logout, members
         };
     }
 }).mount('#app');
