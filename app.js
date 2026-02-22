@@ -139,6 +139,13 @@ createApp({
             currentView.value = 'profile';
         };
 
+        const calculateAverage = (degrees) => {
+          if (!degrees || degrees.length === 0) return 0;
+          const sum = degrees.reduce((acc, item) => acc + item.degree, 0);
+          const avg = sum / degrees.length;
+          return avg.toFixed(1); // إظهار رقم عشري واحد فقط (مثلاً 90.5)
+        };
+        
         onMounted(() => {
             const urlParams = new URLSearchParams(window.location.search);
             let id = urlParams.get('v') || window.location.search.slice(1);
@@ -151,7 +158,7 @@ createApp({
             loginId, loginPassword, handleLogin,
             menuItems, handleAction,
             oldPassword, newPassword, updatePassword,
-            logout, members
+            logout, members, calculateAverage
         };
     }
 }).mount('#app');
